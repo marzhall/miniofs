@@ -8,7 +8,7 @@ import (
     "log"
 	"io"
 	"os"
-    "github.com/minio/minio-go"
+    //"github.com/minio/minio-go"
     "time"
 )
 
@@ -28,6 +28,18 @@ type fakefile struct {
 	v      interface{}
 	offset int64
 	set    func(s string)
+}
+
+func (f *fakefile) Mode() os.FileMode {
+	return os.ModeDir | 0644
+}
+
+func (f *fakefile) ModTime() time.Time {
+    return time.Now()
+}
+
+func (f *fakefile) IsDir() bool {
+    return true;
 }
 
 func (f *fakefile) ReadAt(p []byte, off int64) (int, error) {
@@ -64,7 +76,7 @@ func (f *fakefile) Close() error {
 	return nil
 }
 
-func (f *fakefile) size() int64 {
+func (f *fakefile) Size() int64 {
 	switch f.v.(type) {
 	case map[string]interface{}, []interface{}:
 		return 0
@@ -89,17 +101,11 @@ func (s *stat) IsDir() bool {
 }
 
 func (s *stat) Mode() os.FileMode {
-	switch s.file.v.(type) {
-	case map[string]interface{}, minio.BucketInfo:
-		return os.ModeDir | 0755
-	case []interface{}:
-		return os.ModeDir | 0755
-	}
-	return 0644
+    return s.file.Mode()
 }
 
 func (s *stat) Size() int64 {
-	return s.file.size()
+	return s.file.Size()
 }
 
 type dir struct {

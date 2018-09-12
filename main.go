@@ -19,8 +19,8 @@ import (
 
 var (
 	addr    = flag.String("a", ":5640", "Port to listen on")
-	debug   = flag.Bool("D", false, "trace 9P messages")
-	verbose = flag.Bool("v", false, "print extra info")
+	debug   = flag.Bool("D", true, "trace 9P messages")
+	verbose = flag.Bool("v", true, "print extra info")
 )
 
 type server struct {
@@ -47,7 +47,8 @@ func main() {
     }
 
     //file := make(map[string]interface{})
-    file := BucketList{minioClient, ControlFile{"_9p_s3config", "play.minio.io:9000"}, make(map[string]interface{})}
+    //file := BucketList{minioClient, ControlFile{"_9p_s3config", "play.minio.io:9000"}, make(map[string]interface{})}
+    file := BucketList{minioClient, make(map[string]interface{})}
     srv := server{file, minioClient}
 	var styxServer styx.Server
 	if *verbose {
@@ -111,7 +112,7 @@ func (srv *server) Serve9P(s *styx.Session) {
 	for s.Next() {
 		t := s.Request()
 		parent, file, ok := walkTo(srv.file, t.Path())
-        log.Printf("cwd is %s", srv.file)
+        log.Printf("cwd is %s", srv.file.Mode())
 
 		if !ok {
             log.Printf("errored out on walkTo")
